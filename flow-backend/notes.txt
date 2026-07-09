@@ -1,0 +1,65 @@
+import uvicorn
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from typing import List
+
+class Fruit(BaseModel):
+    name: str
+
+class Fruits(BaseModel):
+    fruits: List[Fruit]
+
+app = FastAPI()
+
+# Define the base origin / URLs that are allowed to call endpoints on the server.
+origins = [
+    "http://localhost:3000"
+]
+
+# CORS stops unauthorized websites, endpoints, servers, etc from accessing the API.
+app.add_middleware(
+    CORSMiddleware,
+    # These are the origins allowed from the list.
+    allow_origins = origins,
+    # We can send things like JWT tokens, etc...
+    allow_credentials = True,
+    # Allow all methods. Includes methods like GET, POST, PUT, DELETE, etc... If you want to block
+    # a certain method, you can add it inside the list "*".
+    allow_methods = ["*"],
+    # Allow all headers. If you want to block certain headers, you can add it inside the list "*".
+    allow_headers = ["*"],
+)
+
+# Create a quick database in memory. It will be erased when the application is shutdown.
+memory_db = {"fruits": []}
+
+# Define the root endpoint inside the () and specify the reponse model to fruits.
+# This method is a get endpoint that returns all the fruits being stored in the database.
+@app.get("/fruits", response_model = Fruits)
+
+# Function to get fruits. Use the pydantic model to take fruits from the database and
+# return them in a format that's consistent with FastAPI.
+def get_fruits():
+    return Fruits(fruits = memory_db["fruits"])
+
+# When we go to the /fruits endpoint, we define the response model that we want to return
+# from the endpoint is Fruits. FastAPI will automatically convert the python object to
+# JSON so when returned, the front-end can interact with it. When we go to the /fruits
+# endpoint, the get_fruits() function will be called and an instance of the Fruits class
+# will be returned. The get_fruits function will take the memory_db with the fruits,
+# wrap it in a python object and return it as JSON.
+
+# Post endpoint. We have a post request that takes in a fruit from the user (the first model, 
+# with the name = str) which is validated by FastAPI that the user is in fact sending a fruit,
+# and if it's correct, add it into the database by appending it to the fruits list and finally,
+# return the fruit so that the user can double check.
+@app.post("/fruits", response_model = Fruit)
+def add_fruit(fruit: Fruit):
+    memory_db["fruits"].append(fruit)
+    return fruit
+
+# This is the code that will actually run the application.
+# Host of 0.0.0.0 means run on all active IP addresses and 8000 is the default port for FastAPI.
+if __name__ == "__main__":
+    uvicorn.run(app, host = "0.0.0.0", port = 8000)
