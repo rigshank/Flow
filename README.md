@@ -11,10 +11,13 @@ The application is organized as a two-part stack:
 
 Current architecture and tech stack:
 
-- Frontend: React 19, React Router, React Icons, Axios, Create React App, CSS files.
-- Backend: FastAPI, Pydantic, Uvicorn, Hugging Face Transformers, CORS middleware.
+- Frontend: React 19.2.x, React Router DOM 7.18.x, React Icons 5.7.x, Axios 1.18.x, Create React App, CSS files.
+- Backend: FastAPI 0.139.x, Pydantic 2.13.x, Uvicorn 0.51.x, Hugging Face Transformers 5.13.x, CORS middleware.
 - Data model: in-memory lists for categories, sections, and tasks. There is no database, authentication layer, or durable persistence yet.
 - AI layer: the backend uses Hugging Face pipelines for summarization and sentiment analysis to generate an AI overview response.
+- Shared dependency files:
+	- `flow-frontend/package.json` for the React app.
+	- `flow-backend/requirements.txt` for the Python service.
 
 At a high level, the UI currently loads a summary dashboard from the backend and provides a basic to-do management screen. The sidebar advertises more sections than the app actually implements, so the project should be treated as partially built rather than feature complete.
 
@@ -74,18 +77,19 @@ npm install
 
 ### 2) Install the backend dependencies
 
-There is no `requirements.txt` in the repository yet, so install the backend packages manually inside a virtual environment:
+Install the backend packages from the pinned requirements file inside a virtual environment:
 
 ```powershell
 cd ..\flow-backend
 python -m venv venv
 venv\Scripts\Activate.ps1
-pip install fastapi uvicorn transformers torch sentencepiece pydantic
+pip install -r requirements.txt
 ```
 
 Notes:
 
 - The backend imports Hugging Face models at startup, so the first run may download model files and take a while.
+- Python 3.10 to 3.12 is the safest choice for the current backend stack. The workspace environment is Python 3.14, but Torch wheels and model dependencies can be more brittle there.
 - If `torch` installation fails on your machine, install the platform-specific build recommended by PyTorch for your Python version.
 
 ### 3) Environment variables
@@ -121,6 +125,37 @@ Visit:
 - Frontend: `http://localhost:3000`
 - Backend health/root response: `http://127.0.0.1:8000/`
 
+## Dependency Updates
+
+The repository now includes pinned dependency files instead of ad hoc install steps.
+
+Frontend updates:
+
+- `react` and `react-dom` are pinned to `19.2.7`.
+- `react-router-dom` is pinned to `7.18.1`.
+- `react-icons` is pinned to `5.7.0`.
+- `@testing-library/jest-dom` is pinned to `6.9.1`.
+- `@testing-library/react` is pinned to `16.3.2`.
+- `@testing-library/user-event` is pinned to `14.6.1`.
+- `axios` is pinned to `1.18.1`.
+- `web-vitals` is pinned to `5.3.0`.
+- `autoprefixer` is pinned to `10.5.2`.
+
+Backend updates:
+
+- `fastapi` is pinned to `0.139.0`.
+- `pydantic` is pinned to `2.13.4`.
+- `uvicorn` is pinned to `0.51.0`.
+- `transformers` is pinned to `5.13.0`.
+- `sentencepiece` is pinned to `0.2.1`.
+- `torch` is pinned to `2.13.0`.
+
+Compatibility note:
+
+- `web-vitals` 5 uses the newer `onCLS`, `onFCP`, `onINP`, `onLCP`, and `onTTFB` helpers. The CRA `reportWebVitals.js` file has already been updated for this API.
+- `@testing-library/user-event` 14 is a newer major release, so any future tests should follow the v14 API rather than older v13 examples.
+- The backend `torch` pin may still require a platform-specific wheel on Windows or a different Python version if pip cannot resolve the default build.
+
 ## Technical Debt & TODOs
 
 The codebase has several known gaps that should be addressed before calling the project complete:
@@ -139,6 +174,7 @@ The codebase has several known gaps that should be addressed before calling the 
 - Add a shared configuration layer for API URLs instead of hardcoding `127.0.0.1:8000` in components.
 - Add tests for the FastAPI endpoints and React screens once the basic flows are wired together.
 - Review or remove the root-level scratch scripts `test.py` and `test1.js` if they are no longer needed; they are not part of the app runtime.
+- Consider replacing the Create React App toolchain if you want a more modern dependency management and build story; CRA is stable but effectively in maintenance mode.
 
 ## Current Status Summary
 

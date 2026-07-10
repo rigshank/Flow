@@ -46,7 +46,6 @@ const ToDoList = () => {
 
   return (
     <div className="app">
-      <Navbar />
       <div className="main-content">
         <h1>To-Do List</h1>
         <div className="section">
