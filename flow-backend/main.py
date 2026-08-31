@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -18,6 +19,8 @@ app.add_middleware(
 )
 
 # Load AI models
+# @asynccontextmanager
+# async def lifespan(app: FastAPI)
 summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
 sentiment_analyzer = pipeline("sentiment-analysis")
 
